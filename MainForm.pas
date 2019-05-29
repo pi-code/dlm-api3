@@ -11,9 +11,22 @@ type
     btn1: TButton;
     pnl1: TPanel;
     mmo1: TMemo;
+    btn2: TButton;
+    pnl2: TPanel;
+    btn3: TButton;
+    btn4: TButton;
+    btn5: TButton;
+    btn6: TButton;
     procedure btn1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure btn2Click(Sender: TObject);
+    procedure btn4Click(Sender: TObject);
+    procedure btn3Click(Sender: TObject);
+    procedure btn5Click(Sender: TObject);
+    procedure btn6Click(Sender: TObject);
   private
+    SessionID : Integer;
+    SessionID2 : Integer;
   public
     procedure DlmCallback(pParameters: pointer; pResult: pointer; pInput: pointer); stdcall;
   end;
@@ -30,26 +43,72 @@ implementation
 
 procedure Log(Msg : String);
 begin
-  Form1.mmo1.Lines.Add(Msg);
+  try
+    Form1.mmo1.Lines.Add(Msg);
+  except
+
+  end;
 end;
 
 procedure TForm1.btn1Click(Sender: TObject);
 var
   ret : Integer;
-  SessionID : Integer;
 begin
-  ret := dlm_config(-1, '<DlmSDK><DlmConfig><Information AppName="TestApplication" /></DlmConfig></DlmSDK>');
+  ret := dlm_config(-1, '<DlmSDK><DlmConfig><Information AppName="Triple-M" /></DlmConfig></DlmSDK>');
   Log('SetAppName: ' + IntToStr(ret));
+  ret := dlm_config(-1, '<DlmSDK><DlmConfig><Display UseDirect3D="1" /></DlmConfig></DlmSDK>');
+  Log('UseDirect3D: ' + IntToStr(ret));
 
-  SessionID := dlm_createSession;
+  SessionId := dlm_connect(pnl1.Handle, '192.168.1.59', '', '3', '', '', @callback, nil);
 
-  dlm_connectSession(SessionID, pnl1.Handle, '192.168.1.59', '3', '', '', '', @callback, nil);
+  ret := dlm_config(sessionID, '<DlmSDK><DlmConfig><Video EnableGPUDecoder="1" /></DlmConfig></DlmSDK>');
+  Log('EnableGPUDecoder: ' + IntToStr(ret));
+end;
 
-  //ret := dlm_config(-1, '<DlmSDK><DlmConfig><Display UseDirect3D="1" /></DlmConfig></DlmSDK>');
-  //Log('UseDirect3D: ' + IntToStr(ret));
+procedure TForm1.btn2Click(Sender: TObject);
+var
+  ret : Integer;
+begin
+  ret := dlm_showLive(SessionID, 1, @callback, nil);
 
+  Log('dlm_showLive: ' + IntToStr(ret));
+end;
 
-  //dlm_connect(pnl1.Handle, '192.168.1.59', '3', '', '', '', @callback, nil);
+procedure TForm1.btn3Click(Sender: TObject);
+var
+  ret : Integer;
+begin
+  ret := dlm_showLive(SessionID2, 1, @callback, nil);
+
+  Log('dlm_showLive: ' + IntToStr(ret));
+
+end;
+
+procedure TForm1.btn4Click(Sender: TObject);
+var
+  ret : Integer;
+begin
+  ret := dlm_config(-1, '<DlmSDK><DlmConfig><Information AppName="Triple-M" /></DlmConfig></DlmSDK>');
+  Log('SetAppName: ' + IntToStr(ret));
+  ret := dlm_config(-1, '<DlmSDK><DlmConfig><Display UseDirect3D="1" /></DlmConfig></DlmSDK>');
+  Log('UseDirect3D: ' + IntToStr(ret));
+
+  SessionId2 := dlm_connect(pnl2.Handle, '192.168.1.59', '', '3', '', '', @callback, nil);
+
+  ret := dlm_config(sessionID2, '<DlmSDK><DlmConfig><Video EnableGPUDecoder="1" /></DlmConfig></DlmSDK>');
+  Log('EnableGPUDecoder: ' + IntToStr(ret));
+end;
+
+procedure TForm1.btn5Click(Sender: TObject);
+begin
+  dlm_disconnect(SessionID, nil, nil);
+  pnl1.Refresh;
+end;
+
+procedure TForm1.btn6Click(Sender: TObject);
+begin
+  dlm_disconnect(SessionID2, nil, nil);
+  pnl2.Refresh;
 end;
 
 procedure TForm1.DlmCallback(pParameters, pResult, pInput: pointer);
@@ -59,6 +118,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  SessionID := -1;
   mmo1.Clear;
 end;
 
